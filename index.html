@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beauty Products Dashboard</title>
+  <style>
+    /* General Styling */
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #ffe6f0, #e6f7ff);
+      color: #333;
+      display: flex;
+      height: 100vh;
+    }
+    .sidebar {
+      width: 240px;
+      background: #fff0f5;
+      padding: 20px;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    .sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      color: #d63384;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar ul li {
+      margin: 12px 0;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      transition: 0.3s;
+    }
+    .sidebar ul li:hover {
+      background: #ffd6e8;
+    }
+    .main {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      color: #d63384;
+      font-size: 22px;
+    }
+    .search-bar input {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 250px;
+    }
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      padding: 15px;
+      text-align: center;
+      transition: 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .card img {
+      max-width: 100%;
+      border-radius: 10px;
+    }
+    .card h3 {
+      margin: 10px 0 6px;
+      color: #333;
+      font-size: 16px;
+    }
+    .card p {
+      margin: 5px 0;
+      font-size: 14px;
+      color: #555;
+    }
+    .price {
+      font-weight: bold;
+      color: #d63384;
+    }
+    .rating {
+      color: #ff9800;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Categories</h2>
+    <ul>
+      <li onclick="filterProducts('all')">All Products</li>
+      <li onclick="filterProducts('Skincare')">Skincare</li>
+      <li onclick="filterProducts('Makeup')">Makeup</li>
+      <li onclick="filterProducts('Haircare')">Haircare</li>
+      <li onclick="filterProducts('Fragrances')">Fragrances</li>
+    </ul>
+  </div>
+
+  <!-- Main Dashboard -->
+  <div class="main">
+    <div class="header">
+      <h1>Beauty Products Dashboard</h1>
+      <div class="search-bar">
+        <input type="text" id="search" placeholder="Search products..." onkeyup="searchProducts()">
+      </div>
+    </div>
+
+    <div class="products" id="productList">
+      <!-- JS will inject product cards here -->
+    </div>
+  </div>
+
+  <script>
+    const products = [
+      { name: "Moisturizing Cream", category: "Skincare", price: "$25", rating: "★★★★☆", img: "https://via.placeholder.com/200x150/ffccd5/333?text=Skincare" },
+      { name: "Matte Lipstick", category: "Makeup", price: "$15", rating: "★★★★★", img: "https://via.placeholder.com/200x150/fcc2ff/333?text=Makeup" },
+      { name: "Shampoo + Conditioner", category: "Haircare", price: "$30", rating: "★★★☆☆", img: "https://via.placeholder.com/200x150/c2f0ff/333?text=Haircare" },
+      { name: "Perfume Mist", category: "Fragrances", price: "$40", rating: "★★★★☆", img: "https://via.placeholder.com/200x150/ffe0cc/333?text=Fragrance" },
+      { name: "Face Serum", category: "Skincare", price: "$35", rating: "★★★★★", img: "https://via.placeholder.com/200x150/e6ccff/333?text=Serum" },
+      { name: "Nail Polish Set", category: "Makeup", price: "$20", rating: "★★★☆☆", img: "https://via.placeholder.com/200x150/ffd6cc/333?text=Nails" }
+    ];
+
+    function displayProducts(list) {
+      const container = document.getElementById("productList");
+      container.innerHTML = "";
+      list.forEach(p => {
+        container.innerHTML += `
+          <div class="card">
+            <img src="${p.img}" alt="${p.name}">
+            <h3>${p.name}</h3>
+            <p>${p.category}</p>
+            <p class="price">${p.price}</p>
+            <p class="rating">${p.rating}</p>
+          </div>
+        `;
+      });
+    }
+
+    function filterProducts(category) {
+      if(category === 'all') {
+        displayProducts(products);
+      } else {
+        const filtered = products.filter(p => p.category === category);
+        displayProducts(filtered);
+      }
+    }
+
+    function searchProducts() {
+      const query = document.getElementById("search").value.toLowerCase();
+      const filtered = products.filter(p => p.name.toLowerCase().includes(query));
+      displayProducts(filtered);
+    }
+
+    // Initial load
+    displayProducts(products);
+  </script>
+</body>
+</html>
