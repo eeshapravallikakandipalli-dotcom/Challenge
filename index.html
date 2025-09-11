@@ -1,174 +1,345 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Beauty Products Dashboard</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Agri Drone Dashboard — Fertilizer & Pesticide Recommendation</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* General Styling */
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #ffe6f0, #e6f7ff);
-      color: #333;
-      display: flex;
-      height: 100vh;
+    :root{
+      --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2; --accent:#22c55e; --danger:#ef4444;
     }
-    .sidebar {
-      width: 240px;
-      background: #fff0f5;
-      padding: 20px;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-    }
-    .sidebar h2 {
-      font-size: 18px;
-      margin-bottom: 20px;
-      color: #d63384;
-    }
-    .sidebar ul {
-      list-style: none;
-      padding: 0;
-    }
-    .sidebar ul li {
-      margin: 12px 0;
-      cursor: pointer;
-      padding: 8px;
-      border-radius: 8px;
-      transition: 0.3s;
-    }
-    .sidebar ul li:hover {
-      background: #ffd6e8;
-    }
-    .main {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .header h1 {
-      color: #d63384;
-      font-size: 22px;
-    }
-    .search-bar input {
-      padding: 8px 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      width: 250px;
-    }
-    .products {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 20px;
-    }
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      padding: 15px;
-      text-align: center;
-      transition: 0.3s;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-    }
-    .card img {
-      max-width: 100%;
-      border-radius: 10px;
-    }
-    .card h3 {
-      margin: 10px 0 6px;
-      color: #333;
-      font-size: 16px;
-    }
-    .card p {
-      margin: 5px 0;
-      font-size: 14px;
-      color: #555;
-    }
-    .price {
-      font-weight: bold;
-      color: #d63384;
-    }
-    .rating {
-      color: #ff9800;
-    }
+    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{margin:0;background:linear-gradient(180deg,#071427 0%, #071726 100%);color:#e6eef6}
+    .app{max-width:1200px;margin:28px auto;padding:18px}
+    header{display:flex;align-items:center;gap:16px}
+    header h1{margin:0;font-size:20px}
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:18px;margin-top:18px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    .controls{display:flex;flex-direction:column;gap:12px}
+    .row{display:flex;gap:8px;align-items:center}
+    label{font-size:13px;color:var(--muted)}
+    select,input[type='file']{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    button{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:#021214;cursor:pointer}
+    .small{font-size:13px;color:var(--muted)}
+    .stat-grid{display:flex;gap:10px}
+    .stat{flex:1;background:rgba(255,255,255,0.02);padding:10px;border-radius:10px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.03);font-size:13px}
+    .hover-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:6px 8px;border-radius:8px;color:var(--muted);cursor:pointer}
+    .footer-note{font-size:12px;color:var(--muted);margin-top:10px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:13px}
+    .legend{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .legend .item{display:flex;gap:6px;align-items:center}
+    .color-dot{width:12px;height:12px;border-radius:4px}
+    /* responsive */
+    @media(max-width:980px){.grid{grid-template-columns:1fr;}.card{padding:12px}}
   </style>
 </head>
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h2>Categories</h2>
-    <ul>
-      <li onclick="filterProducts('all')">All Products</li>
-      <li onclick="filterProducts('Skincare')">Skincare</li>
-      <li onclick="filterProducts('Makeup')">Makeup</li>
-      <li onclick="filterProducts('Haircare')">Haircare</li>
-      <li onclick="filterProducts('Fragrances')">Fragrances</li>
-    </ul>
-  </div>
+  <div class="app">
+    <header>
+      <div class="logo">
+        <h1>Agri Drone Dashboard</h1>
+        <div class="small">Quadcopter image → crop detection → fertilizer & pesticide recommendations</div>
+      </div>
+    </header>
 
-  <!-- Main Dashboard -->
-  <div class="main">
-    <div class="header">
-      <h1>Beauty Products Dashboard</h1>
-      <div class="search-bar">
-        <input type="text" id="search" placeholder="Search products..." onkeyup="searchProducts()">
+    <div class="grid">
+      <!-- LEFT: Main panels -->
+      <div>
+        <!-- Image upload + simulated detection -->
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <strong>Field Capture & Detection</strong>
+            <div class="pill">Simulated / demo UI</div>
+          </div>
+
+          <div class="controls">
+            <div class="row">
+              <label style="flex:0 0 120px">Upload Image</label>
+              <input id="imgInput" type="file" accept="image/*">
+            </div>
+
+            <div class="row">
+              <label style="flex:0 0 120px">Detected Plant</label>
+              <select id="detectedPlant">
+                <option value="wheat">Wheat</option>
+                <option value="rice">Rice</option>
+                <option value="cotton">Cotton</option>
+                <option value="maize">Maize</option>
+                <option value="vegetable">Vegetable (Mixed)</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <label style="flex:0 0 120px">Pest Severity</label>
+              <select id="pestSeverity">
+                <option value="none">None</option>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+
+            <div class="row">
+              <label style="flex:0 0 120px">Field Area (hectares)</label>
+              <input id="areaInput" type="number" min="0.01" step="0.01" value="1">
+            </div>
+
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+              <button id="analyzeBtn">Analyze Image</button>
+              <button id="clearBtn" class="hover-btn">Clear</button>
+            </div>
+
+            <div id="detectionResult" style="margin-top:12px;display:none">
+              <div class="small">Detection summary:</div>
+              <div id="summaryBox" style="margin-top:8px"></div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Recommendations panel -->
+        <div class="card" style="margin-top:14px">
+          <strong>Recommendations</strong>
+          <div class="small">Use these suggested doses as baseline. Adjust based on soil tests and local agronomist advice.</div>
+
+          <div style="margin-top:12px;display:flex;gap:12px;align-items:center">
+            <div style="flex:1">
+              <canvas id="fertChart" height="120"></canvas>
+            </div>
+            <div style="width:240px">
+              <table>
+                <thead><tr><th>Input</th><th>Value</th></tr></thead>
+                <tbody>
+                  <tr><td>Plant</td><td id="tblPlant">-</td></tr>
+                  <tr><td>Area (ha)</td><td id="tblArea">-</td></tr>
+                  <tr><td>Fertilizer N (kg)</td><td id="tblN">-</td></tr>
+                  <tr><td>Fertilizer P (kg)</td><td id="tblP">-</td></tr>
+                  <tr><td>Fertilizer K (kg)</td><td id="tblK">-</td></tr>
+                  <tr><td>Pesticide (ml)</td><td id="tblPest">-</td></tr>
+                </tbody>
+              </table>
+              <div class="footer-note">Hover over the graph to see per-stage suggestions.</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+            <button id="exportCsv" class="hover-btn">Export CSV</button>
+            <button id="saveLog" class="hover-btn">Save to Log</button>
+            <div style="flex:1"></div>
+            <div class="legend">
+              <div class="item"><span class="color-dot" style="background:#22c55e"></span><span class="small">Fertilizer</span></div>
+              <div class="item"><span class="color-dot" style="background:#f59e0b"></span><span class="small">Pesticide</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flight log / table -->
+        <div class="card" style="margin-top:14px">
+          <strong>Quadcopter Flight Log</strong>
+          <div style="margin-top:8px;max-height:220px;overflow:auto">
+            <table id="logTable">
+              <thead><tr><th>Time</th><th>Plant</th><th>Area(ha)</th><th>Result</th><th>Action</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Sidebar -->
+      <div>
+        <div class="card">
+          <strong>Quick Controls</strong>
+          <div style="margin-top:10px" class="small">Roll-over the items to see quick tips</div>
+          <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+            <div class="row">
+              <button class="hover-btn" title="Applies to leafy crops">Leafy crop mode</button>
+              <button class="hover-btn" title="Applies to cereals and grasses">Cereal mode</button>
+            </div>
+
+            <div>
+              <label>Target N-P-K ratio (example)</label>
+              <div style="display:flex;gap:6px;margin-top:6px">
+                <input id="ratioN" type="number" value="50" style="width:70px"> <input id="ratioP" type="number" value="25" style="width:70px"> <input id="ratioK" type="number" value="25" style="width:70px">
+              </div>
+            </div>
+
+            <div>
+              <label>Recommendation aggression</label>
+              <input id="aggRange" type="range" min="0" max="2" step="0.1" value="1">
+              <div class="small">Lower = conservative, Higher = aggressive</div>
+            </div>
+
+            <div style="margin-top:6px">
+              <label>Field map (placeholder)</label>
+              <div style="height:140px;background:linear-gradient(180deg,#062033,#04314a);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px">Map / GeoJSON layers go here</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <strong>About this demo</strong>
+          <div class="small" style="margin-top:8px">This frontend shows how to connect a drone image analysis pipeline with an actionable recommendation UI. Replace the simulated detection with a backend ML API (send image, get plant & pest severity). The doses below are a simple formula example — do soil tests before acting.</div>
+          <div style="margin-top:8px" class="small">Useful next steps: integrate real inference (TensorFlow / PyTorch), incorporate soil data, integrate weather & local regulations.</div>
+        </div>
+
       </div>
     </div>
 
-    <div class="products" id="productList">
-      <!-- JS will inject product cards here -->
-    </div>
+    <div style="margin-top:18px;text-align:center;color:var(--muted);font-size:13px">Demo dashboard — adapt formulas to your agronomist inputs</div>
   </div>
 
   <script>
-    const products = [
-      { name: "Moisturizing Cream", category: "Skincare", price: "$25", rating: "★★★★☆", img: "https://via.placeholder.com/200x150/ffccd5/333?text=Skincare" },
-      { name: "Matte Lipstick", category: "Makeup", price: "$15", rating: "★★★★★", img: "https://via.placeholder.com/200x150/fcc2ff/333?text=Makeup" },
-      { name: "Shampoo + Conditioner", category: "Haircare", price: "$30", rating: "★★★☆☆", img: "https://via.placeholder.com/200x150/c2f0ff/333?text=Haircare" },
-      { name: "Perfume Mist", category: "Fragrances", price: "$40", rating: "★★★★☆", img: "https://via.placeholder.com/200x150/ffe0cc/333?text=Fragrance" },
-      { name: "Face Serum", category: "Skincare", price: "$35", rating: "★★★★★", img: "https://via.placeholder.com/200x150/e6ccff/333?text=Serum" },
-      { name: "Nail Polish Set", category: "Makeup", price: "$20", rating: "★★★☆☆", img: "https://via.placeholder.com/200x150/ffd6cc/333?text=Nails" }
-    ];
+    // --- Utility data & simple formula engine
+    const plantBase = {
+      wheat: {name:'Wheat', nPerHa:100, pPerHa:40, kPerHa:40, pestDosePerHa:150},
+      rice: {name:'Rice', nPerHa:120, pPerHa:50, kPerHa:50, pestDosePerHa:180},
+      cotton: {name:'Cotton', nPerHa:80, pPerHa:30, kPerHa:50, pestDosePerHa:200},
+      maize: {name:'Maize', nPerHa:150, pPerHa:60, kPerHa:60, pestDosePerHa:160},
+      vegetable: {name:'Vegetable (Mixed)', nPerHa:110, pPerHa:45, kPerHa:55, pestDosePerHa:140}
+    };
 
-    function displayProducts(list) {
-      const container = document.getElementById("productList");
-      container.innerHTML = "";
-      list.forEach(p => {
-        container.innerHTML += `
-          <div class="card">
-            <img src="${p.img}" alt="${p.name}">
-            <h3>${p.name}</h3>
-            <p>${p.category}</p>
-            <p class="price">${p.price}</p>
-            <p class="rating">${p.rating}</p>
-          </div>
-        `;
-      });
-    }
+    // Elements
+    const imgInput = document.getElementById('imgInput');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const detectedPlant = document.getElementById('detectedPlant');
+    const pestSeverity = document.getElementById('pestSeverity');
+    const areaInput = document.getElementById('areaInput');
+    const detectionResult = document.getElementById('detectionResult');
+    const summaryBox = document.getElementById('summaryBox');
 
-    function filterProducts(category) {
-      if(category === 'all') {
-        displayProducts(products);
-      } else {
-        const filtered = products.filter(p => p.category === category);
-        displayProducts(filtered);
+    const tblPlant = document.getElementById('tblPlant');
+    const tblArea = document.getElementById('tblArea');
+    const tblN = document.getElementById('tblN');
+    const tblP = document.getElementById('tblP');
+    const tblK = document.getElementById('tblK');
+    const tblPest = document.getElementById('tblPest');
+
+    const exportCsv = document.getElementById('exportCsv');
+    const saveLog = document.getElementById('saveLog');
+    const logTableBody = document.querySelector('#logTable tbody');
+
+    const aggRange = document.getElementById('aggRange');
+    const ratioN = document.getElementById('ratioN');
+    const ratioP = document.getElementById('ratioP');
+    const ratioK = document.getElementById('ratioK');
+
+    // Chart setup
+    const ctxF = document.getElementById('fertChart').getContext('2d');
+    let fertChart = new Chart(ctxF, {
+      type:'bar',
+      data:{labels:['N (kg)','P (kg)','K (kg)','Pesticide (ml)'],datasets:[{label:'Dose per field',data:[0,0,0,0],backgroundColor:['#22c55e','#60a5fa','#a78bfa','#f59e0b']} ]},
+      options:{responsive:true,plugins:{tooltip:{mode:'index',intersect:false},legend:{display:false}}}
+    });
+
+    // Simulate detection: if user uploads image we pretend it's detected; otherwise use selected plant
+    analyzeBtn.addEventListener('click',()=>{
+      const file = imgInput.files[0];
+      let plant = detectedPlant.value;
+      let severity = pestSeverity.value;
+      let area = parseFloat(areaInput.value)||1;
+
+      // Simple pseudo-detection: if an image is present we'll "infer" plant by file name heuristic (demo)
+      if(file){
+        const name = file.name.toLowerCase();
+        if(name.includes('rice')) plant='rice';
+        else if(name.includes('wheat')) plant='wheat';
+        else if(name.includes('maize')||name.includes('corn')) plant='maize';
+        else if(name.includes('cotton')) plant='cotton';
+        else plant = plant; // keep select
       }
+
+      // Build recommendation using formula + aggression factor + pest severity multiplier
+      const base = plantBase[plant];
+      const agg = parseFloat(aggRange.value)||1; // 0..2
+      const severityMult = {none:0,low:0.6,medium:1,high:1.4}[severity]||0;
+
+      // soil/target ratio: redistribute NPK according to ratio inputs
+      const sumRatio = parseFloat(ratioN.value) + parseFloat(ratioP.value) + parseFloat(ratioK.value) || 1;
+      const nRatio = parseFloat(ratioN.value)/sumRatio;
+      const pRatio = parseFloat(ratioP.value)/sumRatio;
+      const kRatio = parseFloat(ratioK.value)/sumRatio;
+
+      // baseline per ha from plant spec, then adjust
+      const nTotal = Math.round(base.nPerHa * area * agg * nRatio);
+      const pTotal = Math.round(base.pPerHa * area * agg * pRatio);
+      const kTotal = Math.round(base.kPerHa * area * agg * kRatio);
+
+      // pesticide volume in ml: perHa * area * severityMult * agg
+      const pestTotal = Math.round(base.pestDosePerHa * area * severityMult * agg);
+
+      // Update UI
+      detectionResult.style.display='block';
+      summaryBox.innerHTML = `<div><strong>Detected:</strong> ${base.name} — Pest severity: ${severity.toUpperCase()}</div><div class="small" style="margin-top:6px">Recommendation calculated using baseline species values, area and aggression slider.</div>`;
+
+      tblPlant.textContent = base.name;
+      tblArea.textContent = area.toFixed(2);
+      tblN.textContent = nTotal + ' kg';
+      tblP.textContent = pTotal + ' kg';
+      tblK.textContent = kTotal + ' kg';
+      tblPest.textContent = pestTotal + ' ml';
+
+      // Update chart
+      fertChart.data.datasets[0].data = [nTotal,pTotal,kTotal,pestTotal];
+      fertChart.update();
+
+      // enable export/save
+      lastRecommendation = {time:(new Date()).toISOString(),plant:base.name,area:nTotal,areaInput:area,n:nTotal,p:pTotal,k:kTotal,pesticide:pestTotal}
+    });
+
+    clearBtn.addEventListener('click',()=>{
+      imgInput.value=''; detectionResult.style.display='none'; summaryBox.innerHTML='';
+      tblPlant.textContent='-'; tblArea.textContent='-'; tblN.textContent='-'; tblP.textContent='-'; tblK.textContent='-'; tblPest.textContent='-';
+      fertChart.data.datasets[0].data=[0,0,0,0]; fertChart.update();
+    });
+
+    // --- logging & export
+    let lastRecommendation = null;
+    saveLog.addEventListener('click',()=>{
+      if(!lastRecommendation){alert('Run an analysis first.');return}
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${new Date().toLocaleString()}</td><td>${lastRecommendation.plant}</td><td>${lastRecommendation.areaInput.toFixed(2)}</td><td>N:${lastRecommendation.n}kg,P:${lastRecommendation.p}kg,K:${lastRecommendation.k}kg,Pest:${lastRecommendation.pesticide}ml</td><td><button class='hover-btn' onclick='deleteRow(this)'>Delete</button></td>`;
+      logTableBody.prepend(tr);
+    });
+
+    window.deleteRow = function(btn){
+      const tr = btn.closest('tr'); tr.remove();
     }
 
-    function searchProducts() {
-      const query = document.getElementById("search").value.toLowerCase();
-      const filtered = products.filter(p => p.name.toLowerCase().includes(query));
-      displayProducts(filtered);
-    }
+    exportCsv.addEventListener('click',()=>{
+      if(!lastRecommendation){alert('Run an analysis first.');return}
+      const rec = lastRecommendation;
+      const rows = [ ['time','plant','area_ha','N_kg','P_kg','K_kg','pesticide_ml'], [rec.time, rec.plant, rec.areaInput, rec.n, rec.p, rec.k, rec.pesticide] ];
+      const csv = rows.map(r=>r.join(',')).join('\n');
+      const blob = new Blob([csv],{type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='recommendation.csv'; a.click(); URL.revokeObjectURL(url);
+    });
 
-    // Initial load
-    displayProducts(products);
+    // small UX: when user changes select update detection placeholder
+    detectedPlant.addEventListener('change',()=>{ detectionResult.style.display='none' });
+    pestSeverity.addEventListener('change',()=>{ detectionResult.style.display='none' });
+
+    // initial example dataset: populate a few example logs
+    (function seedLogs(){
+      const examples = [
+        {t:'2025-09-01 08:12',plant:'Wheat',area:1.5,res:'N:150kg,P:60kg,K:60kg,Pest:200ml'},
+        {t:'2025-09-05 10:02',plant:'Rice',area:2.0,res:'N:240kg,P:100kg,K:100kg,Pest:360ml'}
+      ];
+      examples.forEach(e=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${e.t}</td><td>${e.plant}</td><td>${e.area}</td><td>${e.res}</td><td><button class='hover-btn' onclick='deleteRow(this)'>Delete</button></td>`;
+        logTableBody.appendChild(tr);
+      });
+    })();
+
+    // Notes for integration (console-friendly):
+    console.log('Agri Drone Dashboard loaded — replace demo detect with backend ML inference.');
   </script>
 </body>
 </html>
