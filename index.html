@@ -4,75 +4,122 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Agri Drone Dashboard — Fertilizer & Pesticide Recommendation</title>
-  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    /* ---------- Root & Reset ---------- */
     :root{
-      --bg:#f0f9f4; --card:#ffffff; --muted:#4b5563; --accent:#22c55e; --danger:#ef4444;
+      --bg-1:#042028; --bg-2:#0b3a2e; --card:rgba(255,255,255,0.96); --muted:#6b7280; --primary:#16a34a; --accent:#f59e0b;
+      --glass: rgba(255,255,255,0.06);
+      --glass-2: rgba(255,255,255,0.03);
     }
-    *{box-sizing:border-box;font-family:'Segoe UI',Roboto,Arial,sans-serif}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
+    html,body{height:100%}
+
+    /* ---------- Background ---------- */
     body{
-      margin:0;
-      background:linear-gradient(135deg, #c7f9cc, #e9f5db, #ffffff);
-      color:#1e293b;
-      min-height:100vh;
+      background: radial-gradient(1000px 400px at 10% 10%, rgba(34,197,94,0.07), transparent),
+                  radial-gradient(800px 300px at 90% 80%, rgba(245,158,11,0.05), transparent),
+                  linear-gradient(180deg,var(--bg-1),var(--bg-2));
+      color:#0f172a;
+      -webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;padding:36px;
     }
-    .app{max-width:1200px;margin:28px auto;padding:18px}
-    header{display:flex;align-items:center;gap:16px}
-    header h1{margin:0;font-size:26px;color:#065f46}
-    .grid{display:grid;grid-template-columns:1fr 420px;gap:18px;margin-top:18px}
-    .card{
-      background:var(--card);
-      border:1px solid #e2e8f0;
-      padding:16px;
-      border-radius:16px;
-      box-shadow:0 6px 20px rgba(0,0,0,0.08);
-    }
-    .controls{display:flex;flex-direction:column;gap:12px}
-    .row{display:flex;gap:8px;align-items:center}
-    label{font-size:14px;color:var(--muted);flex:0 0 140px}
-    select,input[type='file'],input[type='number']{width:100%;padding:8px;border-radius:8px;border:1px solid #cbd5e1;background:#f9fafb;color:#1e293b}
-    button{background:var(--accent);border:none;padding:10px 14px;border-radius:10px;color:#fff;cursor:pointer;font-weight:600;transition:background 0.2s}
-    button:hover{background:#16a34a}
-    .small{font-size:13px;color:var(--muted)}
-    .stat-grid{display:flex;gap:10px}
-    .stat{flex:1;background:#f9fafb;padding:10px;border-radius:10px}
+    /* floating leaf shapes */
+    .bg-ornaments{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+    .leaf{position:absolute;opacity:0.12;filter:blur(6px);transform:rotate(-15deg)}
+    .leaf.l1{left:4%;top:6%;width:420px}
+    .leaf.l2{right:6%;bottom:8%;width:360px;opacity:0.08}
+    .leaf.l3{left:50%;top:60%;width:500px;opacity:0.06}
+
+    /* ---------- App layout ---------- */
+    .container{width:1200px;max-width:calc(100% - 48px)}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    header .title{display:flex;align-items:center;gap:14px}
+    .logo{width:54px;height:54px;border-radius:12px;background:linear-gradient(135deg,#34d399,#059669);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:20px;box-shadow:0 8px 30px rgba(6,95,70,0.28)}
+    h1{font-size:20px;color:#ecfeff}
+    p.lead{color:rgba(236,254,255,0.85);font-size:13px}
+
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:18px}
+
+    /* ---------- Card (glass) ---------- */
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border-radius:14px;padding:16px;border:1px solid rgba(255,255,255,0.04);box-shadow:0 10px 30px rgba(2,6,23,0.6);backdrop-filter: blur(6px);color:var(--card)}
+    .card.white{background:var(--card);color:#0f172a}
+    .muted{color:var(--muted);font-size:13px}
+
+    label{font-size:13px;color:rgba(236,254,255,0.9);min-width:130px}
+    .form-row{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+    input,select{padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;min-width:0}
+    input[type=file]{padding:6px}
+
+    .btn{background:linear-gradient(90deg,var(--primary),#059669);border:none;color:white;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    .btn.small{padding:6px 10px;font-size:13px}
+
+    /* ---------- Charts & table ---------- */
+    .row-flex{display:flex;gap:12px}
+    .chart-wrap{flex:1;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px}
     table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;font-size:13px}
-    .hover-btn{background:#f1f5f9;border:1px solid #cbd5e1;padding:8px 12px;border-radius:8px;color:#1e293b;cursor:pointer;transition:background 0.2s}
-    .hover-btn:hover{background:#e2e8f0}
-    .footer-note{font-size:12px;color:var(--muted);margin-top:10px}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#ecfdf5;color:#065f46;font-size:13px;font-weight:500}
-    .legend{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .legend .item{display:flex;gap:6px;align-items:center}
-    .color-dot{width:12px;height:12px;border-radius:4px}
+    th,td{padding:8px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:13px;color:rgba(236,254,255,0.9)}
+
+    /* ---------- Sidebar ---------- */
+    .sidebar .card{position:sticky;top:28px}
+    .controls{display:flex;flex-direction:column;gap:10px}
+    .legend{display:flex;gap:8px;align-items:center}
+    .dot{width:12px;height:12px;border-radius:3px}
+
+    /* ---------- Footer / log ---------- */
+    #logTable td{color:#0f172a}
+    .log-card{background:linear-gradient(180deg,#ffffff, #f8fafc);color:#0f172a}
+
+    /* ---------- Hover tooltips & transitions ---------- */
+    .hint{position:relative}
+    .hint:hover::after{content:attr(data-tip);position:absolute;left:0;top:calc(100% + 8px);background:#0f172a;color:#fff;padding:6px 8px;border-radius:6px;font-size:12px;white-space:nowrap;z-index:30}
+    .fade-up{transform:translateY(6px);opacity:0;animation:fadeUp 600ms forwards}
+    @keyframes fadeUp{to{transform:none;opacity:1}}
+
     /* responsive */
-    @media(max-width:980px){.grid{grid-template-columns:1fr;}.card{padding:12px}}
+    @media(max-width:1080px){.grid{grid-template-columns:1fr}.sidebar .card{position:relative;top:auto}}
   </style>
 </head>
 <body>
-  <div class="app">
+  <div class="bg-ornaments">
+    <svg class="leaf l1" viewBox="0 0 200 200"><defs><linearGradient id="g1" x1="0" x2="1"><stop stop-color="#34d399" offset="0"/><stop stop-color="#059669" offset="1"/></linearGradient></defs><path fill="url(#g1)" d="M20,100 C40,20 160,20 180,100 C160,180 40,180 20,100 Z"/></svg>
+    <svg class="leaf l2" viewBox="0 0 200 200"><defs><linearGradient id="g2" x1="0" x2="1"><stop stop-color="#f59e0b" offset="0"/><stop stop-color="#fb923c" offset="1"/></linearGradient></defs><path fill="url(#g2)" d="M20,100 C40,20 160,20 180,100 C160,180 40,180 20,100 Z"/></svg>
+    <svg class="leaf l3" viewBox="0 0 300 200"><defs><linearGradient id="g3" x1="0" x2="1"><stop stop-color="#86efac" offset="0"/><stop stop-color="#34d399" offset="1"/></linearGradient></defs><path fill="url(#g3)" d="M30,100 C60,10 240,10 270,100 C240,190 60,190 30,100 Z"/></svg>
+  </div>
+
+  <div class="container">
     <header>
-      <h1>🌱 Agri Drone Dashboard</h1>
+      <div class="title">
+        <div class="logo">AD</div>
+        <div>
+          <h1>Agri Drone Dashboard</h1>
+          <div class="muted">Quadcopter camera → plant detection → fertilizer & pesticide recommendations</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn small">Connect Drone</button>
+        <button class="btn ghost small">Help</button>
+      </div>
     </header>
 
-    <div class="grid">
-      <!-- LEFT: Main panels -->
-      <div>
-        <!-- Image upload + simulated detection -->
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <strong>Field Capture & Detection</strong>
-            <div class="pill">Demo Mode</div>
+    <main class="grid">
+      <section>
+        <div class="card fade-up">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div>
+              <strong style="color:#e6fffa">Field Capture & Detection</strong>
+              <div class="muted">Upload a drone image (demo) or use live feed integration.</div>
+            </div>
+            <div class="muted">Mode: <span style="color:#e6fffa">Demo</span></div>
           </div>
 
           <div class="controls">
-            <div class="row">
+            <div class="form-row">
               <label>Upload Image</label>
               <input id="imgInput" type="file" accept="image/*">
             </div>
 
-            <div class="row">
+            <div class="form-row">
               <label>Detected Plant</label>
               <select id="detectedPlant">
                 <option value="wheat">Wheat</option>
@@ -83,7 +130,7 @@
               </select>
             </div>
 
-            <div class="row">
+            <div class="form-row">
               <label>Pest Severity</label>
               <select id="pestSeverity">
                 <option value="none">None</option>
@@ -93,90 +140,231 @@
               </select>
             </div>
 
-            <div class="row">
+            <div class="form-row">
               <label>Field Area (ha)</label>
               <input id="areaInput" type="number" min="0.01" step="0.01" value="1">
             </div>
 
-            <div style="display:flex;gap:8px;justify-content:flex-end">
-              <button id="analyzeBtn">Analyze Image</button>
-              <button id="clearBtn" class="hover-btn">Clear</button>
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:6px">
+              <button id="analyzeBtn" class="btn">Analyze</button>
+              <button id="clearBtn" class="btn ghost">Clear</button>
             </div>
 
             <div id="detectionResult" style="margin-top:12px;display:none">
-              <div class="small">Detection summary:</div>
-              <div id="summaryBox" style="margin-top:8px"></div>
+              <div class="muted">Detection summary:</div>
+              <div id="summaryBox" style="margin-top:8px;color:#e6fffa"></div>
             </div>
           </div>
         </div>
 
-        <!-- Recommendations panel -->
-        <div class="card" style="margin-top:14px">
-          <strong>Recommendations</strong>
-          <div class="small">Use these suggested doses as baseline. Adjust based on soil tests and local agronomist advice.</div>
+        <div class="card fade-up" style="margin-top:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <strong style="color:#e6fffa">Recommendations</strong>
+            <div class="muted">Baseline suggestions — consult agronomist before applying</div>
+          </div>
 
-          <div style="margin-top:12px;display:flex;gap:12px;align-items:center">
-            <div style="flex:1">
-              <canvas id="fertChart" height="120"></canvas>
+          <div class="row-flex">
+            <div class="chart-wrap">
+              <canvas id="fertChart" height="140"></canvas>
             </div>
-            <div style="width:240px">
-              <table>
-                <thead><tr><th>Input</th><th>Value</th></tr></thead>
+            <div style="width:280px">
+              <table class="white card" style="padding:10px">
                 <tbody>
-                  <tr><td>Plant</td><td id="tblPlant">-</td></tr>
-                  <tr><td>Area (ha)</td><td id="tblArea">-</td></tr>
-                  <tr><td>Fertilizer N (kg)</td><td id="tblN">-</td></tr>
-                  <tr><td>Fertilizer P (kg)</td><td id="tblP">-</td></tr>
-                  <tr><td>Fertilizer K (kg)</td><td id="tblK">-</td></tr>
-                  <tr><td>Pesticide (ml)</td><td id="tblPest">-</td></tr>
+                  <tr><td style="font-weight:700">Plant</td><td id="tblPlant">-</td></tr>
+                  <tr><td style="font-weight:700">Area (ha)</td><td id="tblArea">-</td></tr>
+                  <tr><td style="font-weight:700">Fertilizer N</td><td id="tblN">-</td></tr>
+                  <tr><td style="font-weight:700">Fertilizer P</td><td id="tblP">-</td></tr>
+                  <tr><td style="font-weight:700">Fertilizer K</td><td id="tblK">-</td></tr>
+                  <tr><td style="font-weight:700">Pesticide</td><td id="tblPest">-</td></tr>
                 </tbody>
               </table>
-              <div class="footer-note">Hover over the graph to see per-stage suggestions.</div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button id="exportCsv" class="btn small">Export CSV</button>
+                <button id="saveLog" class="btn ghost small">Save to Log</button>
+                <div style="flex:1"></div>
+                <div class="legend">
+                  <div style="display:flex;align-items:center;gap:6px"><div class="dot" style="background:#16a34a"></div><div class="muted">Fertilizer</div></div>
+                  <div style="display:flex;align-items:center;gap:6px"><div class="dot" style="background:#f59e0b"></div><div class="muted">Pesticide</div></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-      </div>
+        <div class="card log-card" style="margin-top:14px">
+          <strong>Flight Log</strong>
+          <div style="margin-top:8px;max-height:200px;overflow:auto">
+            <table id="logTable">
+              <thead><tr><th>Time</th><th>Plant</th><th>Area</th><th>Result</th><th>Action</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
 
-      <!-- RIGHT: Sidebar -->
-      <div>
-        <div class="card">
-          <strong>Quick Controls</strong>
-          <div style="margin-top:10px" class="small">Roll-over the items to see quick tips</div>
+      <aside class="sidebar">
+        <div class="card fade-up">
+          <strong style="color:#e6fffa">Quick Controls</strong>
+          <div style="margin-top:10px" class="muted">Hover buttons for tips</div>
           <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
-            <div class="row">
-              <button class="hover-btn" title="Applies to leafy crops">Leafy crop mode</button>
-              <button class="hover-btn" title="Applies to cereals and grasses">Cereal mode</button>
+            <div style="display:flex;gap:10px">
+              <button class="btn ghost hint" data-tip="For leafy greens">Leafy</button>
+              <button class="btn ghost hint" data-tip="For cereals & grasses">Cereal</button>
             </div>
 
             <div>
-              <label>Target N-P-K ratio</label>
-              <div style="display:flex;gap:6px;margin-top:6px">
+              <div class="muted">Target N-P-K ratio</div>
+              <div style="display:flex;gap:8px;margin-top:6px">
                 <input id="ratioN" type="number" value="50" style="width:70px"> <input id="ratioP" type="number" value="25" style="width:70px"> <input id="ratioK" type="number" value="25" style="width:70px">
               </div>
             </div>
 
             <div>
-              <label>Recommendation aggression</label>
+              <div class="muted">Recommendation aggression</div>
               <input id="aggRange" type="range" min="0" max="2" step="0.1" value="1">
-              <div class="small">Lower = conservative, Higher = aggressive</div>
+              <div class="muted">Lower = conservative, Higher = aggressive</div>
+            </div>
+
+            <div>
+              <div class="muted">Field Map</div>
+              <div style="height:140px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));display:flex;align-items:center;justify-content:center;color:rgba(236,254,255,0.9)">Map / GeoJSON</div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div style="margin-top:18px;text-align:center;color:var(--muted);font-size:13px">Demo dashboard — adapt formulas to your agronomist inputs</div>
+        <div class="card fade-up" style="margin-top:14px">
+          <strong style="color:#e6fffa">About this demo</strong>
+          <div class="muted" style="margin-top:8px">This demo calculates simple N-P-K and pesticide volumes using baseline per-hectare values. Integrate a backend ML model for real detection: send the image, receive plant & pest severity, and feed into this UI.</div>
+        </div>
+      </aside>
+    </main>
+
+    <div style="text-align:center;margin-top:18px;color:rgba(236,254,255,0.8)" class="muted">Nice background, animated ornaments, and tooltips added — adapt formulas to local guidelines.</div>
+
   </div>
 
   <script>
-    // Chart setup
-    const ctxF = document.getElementById('fertChart').getContext('2d');
-    let fertChart = new Chart(ctxF, {
+    // ---------- Data (baseline per ha) ----------
+    const plantBase = {
+      wheat: {name:'Wheat', nPerHa:100, pPerHa:40, kPerHa:40, pestDosePerHa:150},
+      rice: {name:'Rice', nPerHa:120, pPerHa:50, kPerHa:50, pestDosePerHa:180},
+      cotton: {name:'Cotton', nPerHa:80, pPerHa:30, kPerHa:50, pestDosePerHa:200},
+      maize: {name:'Maize', nPerHa:150, pPerHa:60, kPerHa:60, pestDosePerHa:160},
+      vegetable: {name:'Vegetable (Mixed)', nPerHa:110, pPerHa:45, kPerHa:55, pestDosePerHa:140}
+    };
+
+    // ---------- Elements ----------
+    const imgInput = document.getElementById('imgInput');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const detectedPlant = document.getElementById('detectedPlant');
+    const pestSeverity = document.getElementById('pestSeverity');
+    const areaInput = document.getElementById('areaInput');
+    const detectionResult = document.getElementById('detectionResult');
+    const summaryBox = document.getElementById('summaryBox');
+
+    const tblPlant = document.getElementById('tblPlant');
+    const tblArea = document.getElementById('tblArea');
+    const tblN = document.getElementById('tblN');
+    const tblP = document.getElementById('tblP');
+    const tblK = document.getElementById('tblK');
+    const tblPest = document.getElementById('tblPest');
+
+    const exportCsv = document.getElementById('exportCsv');
+    const saveLog = document.getElementById('saveLog');
+    const logTableBody = document.querySelector('#logTable tbody');
+
+    const aggRange = document.getElementById('aggRange');
+    const ratioN = document.getElementById('ratioN');
+    const ratioP = document.getElementById('ratioP');
+    const ratioK = document.getElementById('ratioK');
+
+    // ---------- Chart ----------
+    const ctx = document.getElementById('fertChart').getContext('2d');
+    const fertChart = new Chart(ctx, {
       type:'bar',
-      data:{labels:['N (kg)','P (kg)','K (kg)','Pesticide (ml)'],datasets:[{label:'Dose per field',data:[0,0,0,0],backgroundColor:['#22c55e','#60a5fa','#a78bfa','#f59e0b']} ]},
-      options:{responsive:true,plugins:{tooltip:{mode:'index',intersect:false},legend:{display:false}}}
+      data:{labels:['N (kg)','P (kg)','K (kg)','Pesticide (ml)'],datasets:[{label:'Dose',data:[0,0,0,0],backgroundColor:['#34d399','#60a5fa','#a78bfa','#f59e0b']} ]},
+      options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': '+ctx.formattedValue}}}}}
     });
+
+    // ---------- Logic ----------
+    let lastRecommendation = null;
+
+    analyzeBtn.addEventListener('click',()=>{
+      const file = imgInput.files[0];
+      let plantKey = detectedPlant.value;
+      let severity = pestSeverity.value;
+      let area = parseFloat(areaInput.value)||1;
+
+      // demo: simple filename heuristic
+      if(file){
+        const name = file.name.toLowerCase();
+        if(name.includes('rice')) plantKey='rice';
+        else if(name.includes('wheat')) plantKey='wheat';
+        else if(name.includes('maize')||name.includes('corn')) plantKey='maize';
+        else if(name.includes('cotton')) plantKey='cotton';
+      }
+
+      const base = plantBase[plantKey];
+      const agg = parseFloat(aggRange.value)||1;
+      const severityMult = {none:0,low:0.6,medium:1,high:1.4}[severity]||0;
+
+      const sumRatio = (parseFloat(ratioN.value) + parseFloat(ratioP.value) + parseFloat(ratioK.value)) || 1;
+      const nRatio = parseFloat(ratioN.value)/sumRatio;
+      const pRatio = parseFloat(ratioP.value)/sumRatio;
+      const kRatio = parseFloat(ratioK.value)/sumRatio;
+
+      const nTotal = Math.round(base.nPerHa * area * agg * nRatio);
+      const pTotal = Math.round(base.pPerHa * area * agg * pRatio);
+      const kTotal = Math.round(base.kPerHa * area * agg * kRatio);
+      const pestTotal = Math.round(base.pestDosePerHa * area * severityMult * agg);
+
+      detectionResult.style.display='block';
+      summaryBox.innerHTML = `<div><strong>${base.name}</strong> — Pest: ${severity.toUpperCase()} · Area: ${area} ha</div><div style="margin-top:6px" class="muted">Formula: base × area × aggression × severity</div>`;
+
+      tblPlant.textContent = base.name;
+      tblArea.textContent = area.toFixed(2);
+      tblN.textContent = nTotal + ' kg';
+      tblP.textContent = pTotal + ' kg';
+      tblK.textContent = kTotal + ' kg';
+      tblPest.textContent = pestTotal + ' ml';
+
+      fertChart.data.datasets[0].data = [nTotal,pTotal,kTotal,pestTotal];
+      fertChart.update();
+
+      lastRecommendation = {time:(new Date()).toISOString(),plant:base.name,area:area,n:nTotal,p:pTotal,k:kTotal,pesticide:pestTotal};
+    });
+
+    clearBtn.addEventListener('click',()=>{
+      imgInput.value='';detectionResult.style.display='none';summaryBox.innerHTML='';
+      tblPlant.textContent='-';tblArea.textContent='-';tblN.textContent='-';tblP.textContent='-';tblK.textContent='-';tblPest.textContent='-';
+      fertChart.data.datasets[0].data=[0,0,0,0];fertChart.update();
+      lastRecommendation=null;
+    });
+
+    saveLog.addEventListener('click',()=>{
+      if(!lastRecommendation){alert('Run an analysis first.');return}
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${new Date().toLocaleString()}</td><td>${lastRecommendation.plant}</td><td>${lastRecommendation.area} ha</td><td>N:${lastRecommendation.n}kg P:${lastRecommendation.p}kg K:${lastRecommendation.k}kg Pest:${lastRecommendation.pesticide}ml</td><td><button class='btn ghost small' onclick='this.closest(\"tr\").remove()'>Delete</button></td>`;
+      document.querySelector('#logTable tbody').prepend(tr);
+    });
+
+    exportCsv.addEventListener('click',()=>{
+      if(!lastRecommendation){alert('Run an analysis first.');return}
+      const rec = lastRecommendation;
+      const rows = [['time','plant','area_ha','N_kg','P_kg','K_kg','pesticide_ml'],[rec.time,rec.plant,rec.area,rec.n,rec.p,rec.k,rec.pesticide]];
+      const csv = rows.map(r=>r.join(',')).join('\n');
+      const blob = new Blob([csv],{type:'text/csv'});
+      const url = URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='recommendation.csv';a.click();URL.revokeObjectURL(url);
+    });
+
+    // seed logs
+    (function seed(){
+      const examples=[{t:'2025-09-01 08:12',plant:'Wheat',area:'1.5',res:'N:150kg,P:60kg,K:60kg,Pest:200ml'},{t:'2025-09-05 10:02',plant:'Rice',area:'2.0',res:'N:240kg,P:100kg,K:100kg,Pest:360ml'}];
+      const body=document.querySelector('#logTable tbody');examples.forEach(e=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${e.t}</td><td>${e.plant}</td><td>${e.area}</td><td>${e.res}</td><td><button class='btn ghost small' onclick='this.closest(\"tr\").remove()'>Delete</button></td>`;body.appendChild(tr);});
+    })();
+
+    console.log('Agri Drone Dashboard ready — beautiful background loaded.');
   </script>
 </body>
 </html>
