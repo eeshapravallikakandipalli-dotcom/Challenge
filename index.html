@@ -8,28 +8,41 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root{
-      --bg:#0f1724; --card:#0b1220; --muted:#9aa4b2; --accent:#22c55e; --danger:#ef4444;
+      --bg:#f0f9f4; --card:#ffffff; --muted:#4b5563; --accent:#22c55e; --danger:#ef4444;
     }
-    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
-    body{margin:0;background:linear-gradient(180deg,#071427 0%, #071726 100%);color:#e6eef6}
+    *{box-sizing:border-box;font-family:'Segoe UI',Roboto,Arial,sans-serif}
+    body{
+      margin:0;
+      background:linear-gradient(135deg, #c7f9cc, #e9f5db, #ffffff);
+      color:#1e293b;
+      min-height:100vh;
+    }
     .app{max-width:1200px;margin:28px auto;padding:18px}
     header{display:flex;align-items:center;gap:16px}
-    header h1{margin:0;font-size:20px}
+    header h1{margin:0;font-size:26px;color:#065f46}
     .grid{display:grid;grid-template-columns:1fr 420px;gap:18px;margin-top:18px}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:14px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+    .card{
+      background:var(--card);
+      border:1px solid #e2e8f0;
+      padding:16px;
+      border-radius:16px;
+      box-shadow:0 6px 20px rgba(0,0,0,0.08);
+    }
     .controls{display:flex;flex-direction:column;gap:12px}
     .row{display:flex;gap:8px;align-items:center}
-    label{font-size:13px;color:var(--muted)}
-    select,input[type='file']{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-    button{background:var(--accent);border:none;padding:8px 12px;border-radius:10px;color:#021214;cursor:pointer}
+    label{font-size:14px;color:var(--muted);flex:0 0 140px}
+    select,input[type='file'],input[type='number']{width:100%;padding:8px;border-radius:8px;border:1px solid #cbd5e1;background:#f9fafb;color:#1e293b}
+    button{background:var(--accent);border:none;padding:10px 14px;border-radius:10px;color:#fff;cursor:pointer;font-weight:600;transition:background 0.2s}
+    button:hover{background:#16a34a}
     .small{font-size:13px;color:var(--muted)}
     .stat-grid{display:flex;gap:10px}
-    .stat{flex:1;background:rgba(255,255,255,0.02);padding:10px;border-radius:10px}
+    .stat{flex:1;background:#f9fafb;padding:10px;border-radius:10px}
     table{width:100%;border-collapse:collapse}
-    th,td{padding:8px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.03);font-size:13px}
-    .hover-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:6px 8px;border-radius:8px;color:var(--muted);cursor:pointer}
+    th,td{padding:8px;text-align:left;border-bottom:1px solid #e2e8f0;font-size:13px}
+    .hover-btn{background:#f1f5f9;border:1px solid #cbd5e1;padding:8px 12px;border-radius:8px;color:#1e293b;cursor:pointer;transition:background 0.2s}
+    .hover-btn:hover{background:#e2e8f0}
     .footer-note{font-size:12px;color:var(--muted);margin-top:10px}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:13px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#ecfdf5;color:#065f46;font-size:13px;font-weight:500}
     .legend{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .legend .item{display:flex;gap:6px;align-items:center}
     .color-dot{width:12px;height:12px;border-radius:4px}
@@ -40,10 +53,7 @@
 <body>
   <div class="app">
     <header>
-      <div class="logo">
-        <h1>Agri Drone Dashboard</h1>
-        <div class="small">Quadcopter image → crop detection → fertilizer & pesticide recommendations</div>
-      </div>
+      <h1>🌱 Agri Drone Dashboard</h1>
     </header>
 
     <div class="grid">
@@ -53,17 +63,17 @@
         <div class="card">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
             <strong>Field Capture & Detection</strong>
-            <div class="pill">Simulated / demo UI</div>
+            <div class="pill">Demo Mode</div>
           </div>
 
           <div class="controls">
             <div class="row">
-              <label style="flex:0 0 120px">Upload Image</label>
+              <label>Upload Image</label>
               <input id="imgInput" type="file" accept="image/*">
             </div>
 
             <div class="row">
-              <label style="flex:0 0 120px">Detected Plant</label>
+              <label>Detected Plant</label>
               <select id="detectedPlant">
                 <option value="wheat">Wheat</option>
                 <option value="rice">Rice</option>
@@ -74,7 +84,7 @@
             </div>
 
             <div class="row">
-              <label style="flex:0 0 120px">Pest Severity</label>
+              <label>Pest Severity</label>
               <select id="pestSeverity">
                 <option value="none">None</option>
                 <option value="low">Low</option>
@@ -84,7 +94,7 @@
             </div>
 
             <div class="row">
-              <label style="flex:0 0 120px">Field Area (hectares)</label>
+              <label>Field Area (ha)</label>
               <input id="areaInput" type="number" min="0.01" step="0.01" value="1">
             </div>
 
@@ -97,7 +107,6 @@
               <div class="small">Detection summary:</div>
               <div id="summaryBox" style="margin-top:8px"></div>
             </div>
-
           </div>
         </div>
 
@@ -125,27 +134,6 @@
               <div class="footer-note">Hover over the graph to see per-stage suggestions.</div>
             </div>
           </div>
-
-          <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
-            <button id="exportCsv" class="hover-btn">Export CSV</button>
-            <button id="saveLog" class="hover-btn">Save to Log</button>
-            <div style="flex:1"></div>
-            <div class="legend">
-              <div class="item"><span class="color-dot" style="background:#22c55e"></span><span class="small">Fertilizer</span></div>
-              <div class="item"><span class="color-dot" style="background:#f59e0b"></span><span class="small">Pesticide</span></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Flight log / table -->
-        <div class="card" style="margin-top:14px">
-          <strong>Quadcopter Flight Log</strong>
-          <div style="margin-top:8px;max-height:220px;overflow:auto">
-            <table id="logTable">
-              <thead><tr><th>Time</th><th>Plant</th><th>Area(ha)</th><th>Result</th><th>Action</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
         </div>
 
       </div>
@@ -162,7 +150,7 @@
             </div>
 
             <div>
-              <label>Target N-P-K ratio (example)</label>
+              <label>Target N-P-K ratio</label>
               <div style="display:flex;gap:6px;margin-top:6px">
                 <input id="ratioN" type="number" value="50" style="width:70px"> <input id="ratioP" type="number" value="25" style="width:70px"> <input id="ratioK" type="number" value="25" style="width:70px">
               </div>
@@ -173,20 +161,8 @@
               <input id="aggRange" type="range" min="0" max="2" step="0.1" value="1">
               <div class="small">Lower = conservative, Higher = aggressive</div>
             </div>
-
-            <div style="margin-top:6px">
-              <label>Field map (placeholder)</label>
-              <div style="height:140px;background:linear-gradient(180deg,#062033,#04314a);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px">Map / GeoJSON layers go here</div>
-            </div>
           </div>
         </div>
-
-        <div class="card" style="margin-top:14px">
-          <strong>About this demo</strong>
-          <div class="small" style="margin-top:8px">This frontend shows how to connect a drone image analysis pipeline with an actionable recommendation UI. Replace the simulated detection with a backend ML API (send image, get plant & pest severity). The doses below are a simple formula example — do soil tests before acting.</div>
-          <div style="margin-top:8px" class="small">Useful next steps: integrate real inference (TensorFlow / PyTorch), incorporate soil data, integrate weather & local regulations.</div>
-        </div>
-
       </div>
     </div>
 
@@ -194,41 +170,6 @@
   </div>
 
   <script>
-    // --- Utility data & simple formula engine
-    const plantBase = {
-      wheat: {name:'Wheat', nPerHa:100, pPerHa:40, kPerHa:40, pestDosePerHa:150},
-      rice: {name:'Rice', nPerHa:120, pPerHa:50, kPerHa:50, pestDosePerHa:180},
-      cotton: {name:'Cotton', nPerHa:80, pPerHa:30, kPerHa:50, pestDosePerHa:200},
-      maize: {name:'Maize', nPerHa:150, pPerHa:60, kPerHa:60, pestDosePerHa:160},
-      vegetable: {name:'Vegetable (Mixed)', nPerHa:110, pPerHa:45, kPerHa:55, pestDosePerHa:140}
-    };
-
-    // Elements
-    const imgInput = document.getElementById('imgInput');
-    const analyzeBtn = document.getElementById('analyzeBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const detectedPlant = document.getElementById('detectedPlant');
-    const pestSeverity = document.getElementById('pestSeverity');
-    const areaInput = document.getElementById('areaInput');
-    const detectionResult = document.getElementById('detectionResult');
-    const summaryBox = document.getElementById('summaryBox');
-
-    const tblPlant = document.getElementById('tblPlant');
-    const tblArea = document.getElementById('tblArea');
-    const tblN = document.getElementById('tblN');
-    const tblP = document.getElementById('tblP');
-    const tblK = document.getElementById('tblK');
-    const tblPest = document.getElementById('tblPest');
-
-    const exportCsv = document.getElementById('exportCsv');
-    const saveLog = document.getElementById('saveLog');
-    const logTableBody = document.querySelector('#logTable tbody');
-
-    const aggRange = document.getElementById('aggRange');
-    const ratioN = document.getElementById('ratioN');
-    const ratioP = document.getElementById('ratioP');
-    const ratioK = document.getElementById('ratioK');
-
     // Chart setup
     const ctxF = document.getElementById('fertChart').getContext('2d');
     let fertChart = new Chart(ctxF, {
@@ -236,110 +177,6 @@
       data:{labels:['N (kg)','P (kg)','K (kg)','Pesticide (ml)'],datasets:[{label:'Dose per field',data:[0,0,0,0],backgroundColor:['#22c55e','#60a5fa','#a78bfa','#f59e0b']} ]},
       options:{responsive:true,plugins:{tooltip:{mode:'index',intersect:false},legend:{display:false}}}
     });
-
-    // Simulate detection: if user uploads image we pretend it's detected; otherwise use selected plant
-    analyzeBtn.addEventListener('click',()=>{
-      const file = imgInput.files[0];
-      let plant = detectedPlant.value;
-      let severity = pestSeverity.value;
-      let area = parseFloat(areaInput.value)||1;
-
-      // Simple pseudo-detection: if an image is present we'll "infer" plant by file name heuristic (demo)
-      if(file){
-        const name = file.name.toLowerCase();
-        if(name.includes('rice')) plant='rice';
-        else if(name.includes('wheat')) plant='wheat';
-        else if(name.includes('maize')||name.includes('corn')) plant='maize';
-        else if(name.includes('cotton')) plant='cotton';
-        else plant = plant; // keep select
-      }
-
-      // Build recommendation using formula + aggression factor + pest severity multiplier
-      const base = plantBase[plant];
-      const agg = parseFloat(aggRange.value)||1; // 0..2
-      const severityMult = {none:0,low:0.6,medium:1,high:1.4}[severity]||0;
-
-      // soil/target ratio: redistribute NPK according to ratio inputs
-      const sumRatio = parseFloat(ratioN.value) + parseFloat(ratioP.value) + parseFloat(ratioK.value) || 1;
-      const nRatio = parseFloat(ratioN.value)/sumRatio;
-      const pRatio = parseFloat(ratioP.value)/sumRatio;
-      const kRatio = parseFloat(ratioK.value)/sumRatio;
-
-      // baseline per ha from plant spec, then adjust
-      const nTotal = Math.round(base.nPerHa * area * agg * nRatio);
-      const pTotal = Math.round(base.pPerHa * area * agg * pRatio);
-      const kTotal = Math.round(base.kPerHa * area * agg * kRatio);
-
-      // pesticide volume in ml: perHa * area * severityMult * agg
-      const pestTotal = Math.round(base.pestDosePerHa * area * severityMult * agg);
-
-      // Update UI
-      detectionResult.style.display='block';
-      summaryBox.innerHTML = `<div><strong>Detected:</strong> ${base.name} — Pest severity: ${severity.toUpperCase()}</div><div class="small" style="margin-top:6px">Recommendation calculated using baseline species values, area and aggression slider.</div>`;
-
-      tblPlant.textContent = base.name;
-      tblArea.textContent = area.toFixed(2);
-      tblN.textContent = nTotal + ' kg';
-      tblP.textContent = pTotal + ' kg';
-      tblK.textContent = kTotal + ' kg';
-      tblPest.textContent = pestTotal + ' ml';
-
-      // Update chart
-      fertChart.data.datasets[0].data = [nTotal,pTotal,kTotal,pestTotal];
-      fertChart.update();
-
-      // enable export/save
-      lastRecommendation = {time:(new Date()).toISOString(),plant:base.name,area:nTotal,areaInput:area,n:nTotal,p:pTotal,k:kTotal,pesticide:pestTotal}
-    });
-
-    clearBtn.addEventListener('click',()=>{
-      imgInput.value=''; detectionResult.style.display='none'; summaryBox.innerHTML='';
-      tblPlant.textContent='-'; tblArea.textContent='-'; tblN.textContent='-'; tblP.textContent='-'; tblK.textContent='-'; tblPest.textContent='-';
-      fertChart.data.datasets[0].data=[0,0,0,0]; fertChart.update();
-    });
-
-    // --- logging & export
-    let lastRecommendation = null;
-    saveLog.addEventListener('click',()=>{
-      if(!lastRecommendation){alert('Run an analysis first.');return}
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${new Date().toLocaleString()}</td><td>${lastRecommendation.plant}</td><td>${lastRecommendation.areaInput.toFixed(2)}</td><td>N:${lastRecommendation.n}kg,P:${lastRecommendation.p}kg,K:${lastRecommendation.k}kg,Pest:${lastRecommendation.pesticide}ml</td><td><button class='hover-btn' onclick='deleteRow(this)'>Delete</button></td>`;
-      logTableBody.prepend(tr);
-    });
-
-    window.deleteRow = function(btn){
-      const tr = btn.closest('tr'); tr.remove();
-    }
-
-    exportCsv.addEventListener('click',()=>{
-      if(!lastRecommendation){alert('Run an analysis first.');return}
-      const rec = lastRecommendation;
-      const rows = [ ['time','plant','area_ha','N_kg','P_kg','K_kg','pesticide_ml'], [rec.time, rec.plant, rec.areaInput, rec.n, rec.p, rec.k, rec.pesticide] ];
-      const csv = rows.map(r=>r.join(',')).join('\n');
-      const blob = new Blob([csv],{type:'text/csv'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download='recommendation.csv'; a.click(); URL.revokeObjectURL(url);
-    });
-
-    // small UX: when user changes select update detection placeholder
-    detectedPlant.addEventListener('change',()=>{ detectionResult.style.display='none' });
-    pestSeverity.addEventListener('change',()=>{ detectionResult.style.display='none' });
-
-    // initial example dataset: populate a few example logs
-    (function seedLogs(){
-      const examples = [
-        {t:'2025-09-01 08:12',plant:'Wheat',area:1.5,res:'N:150kg,P:60kg,K:60kg,Pest:200ml'},
-        {t:'2025-09-05 10:02',plant:'Rice',area:2.0,res:'N:240kg,P:100kg,K:100kg,Pest:360ml'}
-      ];
-      examples.forEach(e=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${e.t}</td><td>${e.plant}</td><td>${e.area}</td><td>${e.res}</td><td><button class='hover-btn' onclick='deleteRow(this)'>Delete</button></td>`;
-        logTableBody.appendChild(tr);
-      });
-    })();
-
-    // Notes for integration (console-friendly):
-    console.log('Agri Drone Dashboard loaded — replace demo detect with backend ML inference.');
   </script>
 </body>
 </html>
